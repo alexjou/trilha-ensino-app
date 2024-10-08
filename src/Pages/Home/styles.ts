@@ -3,8 +3,13 @@ import Colors from "../../Constants/Colors";
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: '100%',
+    backgroundColor: Colors.default,
+  },
+  backgroundImage: {
     backgroundColor: "#e5ddd5",
+    flex: 1,
+    resizeMode: "cover", // Cobrir toda a área de fundo
   },
   inner: {
     flex: 1,
@@ -12,12 +17,13 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     paddingHorizontal: 10,
-    paddingVertical: 20,
+    // paddingVertical: 20,
   },
   messageRow: {
     flexDirection: "row",
     alignItems: "flex-end",
     marginVertical: 5,
+    marginTop: 25
   },
   userRow: {
     justifyContent: "flex-end",
@@ -39,7 +45,6 @@ const styles = StyleSheet.create({
   userBubble: {
     backgroundColor: "#DCF8C6", // Verde claro (estilo do WhatsApp)
     alignSelf: "flex-end",
-    marginRight: 10
   },
   botBubble: {
     backgroundColor: "#FFF", // Bolha do bot em branco
@@ -54,14 +59,16 @@ const styles = StyleSheet.create({
     padding: 10,
     borderTopWidth: 1,
     borderColor: "#ddd",
-    backgroundColor: "#FFF",
+    backgroundColor: Colors.default,
     alignItems: "center",
   },
   input: {
     flex: 1,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 10,
     paddingHorizontal: 15,
+    borderColor: Colors.border_color,
+    borderWidth: 1,
     backgroundColor: "#f1f1f1",
     marginRight: 10,
   },
@@ -69,7 +76,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.default2, // Cor do botão de enviar (verde WhatsApp)
-    borderRadius: 20,
+    borderRadius: 10,
     paddingHorizontal: 15,
     paddingVertical: 8,
   },

@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
@@ -14,7 +15,8 @@ import {
 } from "react-native";
 import styles from "./styles";
 import { sendChat } from "../../db/gepeto";
-import images from "../../Constants/images";
+import images from "../../Constants/images"; // Inclui todas as imagens
+import Header from "../../Components/Header";
 
 type Message = {
   id: string;
@@ -22,7 +24,7 @@ type Message = {
   sender: "user" | "bot";
 };
 
-export default function Login() {
+export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
 
@@ -63,64 +65,79 @@ export default function Login() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView
-          style={styles.inner}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={90} // Ajuste para iOS
-        >
-          <ScrollView contentContainerStyle={styles.messagesContainer}>
-            {messages.map((message) => (
-              <View
-                key={message.id}
-                style={[
-                  styles.messageRow,
-                  message.sender === "user"
-                    ? styles.userRow
-                    : styles.botRow
-                ]}
-              >
-                {message.sender === "bot" && (
-                  <Image
-                    source={images.robo} // Avatar do bot
-                    style={styles.avatar}
-                  />
-                )}
-
+      <Header />
+      <ImageBackground
+        source={images.Frame}
+        style={styles.backgroundImage}
+        imageStyle={{ opacity: 0.1 }}
+      >
+        {/* Envolvendo todo o conteúdo com TouchableWithoutFeedback para fechar o teclado */}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          {/* Usando KeyboardAvoidingView para evitar sobreposição do teclado */}
+          <KeyboardAvoidingView
+            style={styles.inner}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 105 : 70} // Ajuste para iOS
+          >
+            {/* Incluíndo o ScrollView para que o conteúdo role quando o teclado aparecer */}
+            <ScrollView
+              contentContainerStyle={styles.messagesContainer}
+              keyboardShouldPersistTaps="handled"
+            >
+              {messages.map((message) => (
                 <View
+                  key={message.id}
                   style={[
-                    styles.messageBubble,
+                    styles.messageRow,
                     message.sender === "user"
-                      ? styles.userBubble
-                      : styles.botBubble
+                      ? styles.userRow
+                      : styles.botRow
                   ]}
                 >
-                  <Text style={styles.messageText}>{message.text}</Text>
+                  {message.sender === "bot" && (
+                    <Image
+                      source={images.robo} // Avatar do bot
+                      style={styles.avatar}
+                    />
+                  )}
+
+                  <View
+                    style={[
+                      styles.messageBubble,
+                      message.sender === "user"
+                        ? styles.userBubble
+                        : styles.botBubble
+                    ]}
+                  >
+                    <Text style={styles.messageText}>{message.text}</Text>
+                  </View>
+
+                  {message.sender === "user" && (
+                    <Image
+                      source={images.User} // Avatar do usuário
+                      style={styles.avatar}
+                    />
+                  )}
                 </View>
+              ))}
+            </ScrollView>
 
-                {message.sender === "user" && (
-                  <Image
-                    source={images.User} // Avatar do usuário
-                    style={styles.avatar}
-                  />
-                )}
-              </View>
-            ))}
-          </ScrollView>
-
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={input}
-              onChangeText={setInput}
-              placeholder="Digite uma mensagem"
-            />
-            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-              <Text style={styles.sendButtonText}>Enviar</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+            {/* Input e botão de enviar */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                value={input}
+                onChangeText={setInput}
+                placeholder="Digite uma mensagem"
+                placeholderTextColor="#aaa"
+              />
+              <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+                <Text style={styles.sendButtonText}>Enviar</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </ImageBackground>
     </SafeAreaView>
   );
 }

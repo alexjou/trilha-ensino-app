@@ -4,4 +4,5 @@ export default {
   EyeOff: require("../../assets/images/eyeOff.png"),
   robo: require("../../assets/images/robo.png"),
   User: require("../../assets/images/User.png"),
+  Frame: require("../../assets/images/Frame.png"),
 }

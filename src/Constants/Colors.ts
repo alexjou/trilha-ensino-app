@@ -31,5 +31,6 @@ export default {
   background: '#f6f6f6',
   buttonRed: '#B5151C',
   background_button: '#C7E7D9',
-  background_types: '#F08474'
+  background_types: '#F08474',
+  border_color: '#c2c2c2'
 };
