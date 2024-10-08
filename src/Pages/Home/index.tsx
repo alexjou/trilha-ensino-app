@@ -27,6 +27,7 @@ type Message = {
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
+  const [isTyping, setIsTyping] = useState<boolean>(false); // Para controlar o efeito de digitação
 
   useEffect(() => {
     // Mensagem inicial do bot
@@ -38,6 +39,32 @@ export default function Home() {
       }
     ]);
   }, []);
+
+  // Função para simular digitação letra por letra
+  const simulateTyping = (text: string) => {
+    setIsTyping(true); // Inicia o efeito de digitação
+    let index = 0;
+    let botMessage = "";
+
+    const typingInterval = setInterval(() => {
+      if (index < text.length) {
+        botMessage += text[index];
+        index++;
+
+        // Atualiza a última mensagem do bot em tempo real
+        setMessages((prevMessages) =>
+          prevMessages.map((msg, idx) =>
+            msg.sender === "bot" && idx === prevMessages.length - 1
+              ? { ...msg, text: botMessage }
+              : msg
+          )
+        );
+      } else {
+        clearInterval(typingInterval);
+        setIsTyping(false); // Termina o efeito de digitação
+      }
+    }, 50); // Atraso de 50ms entre cada letra
+  };
 
   const handleSend = async () => {
     if (input.trim() === "") return;
@@ -54,13 +81,15 @@ export default function Home() {
     // Enviar mensagem para o ChatGPT e receber a resposta
     const response = await sendChat(input);
 
+    // Adiciona a resposta vazia e simula a digitação
     const botMessage: Message = {
       id: Date.now().toString(),
-      text: response,
+      text: "",
       sender: "bot"
     };
 
     setMessages((prev) => [...prev, botMessage]);
+    simulateTyping(response); // Simula a digitação
   };
 
   return (
@@ -71,15 +100,12 @@ export default function Home() {
         style={styles.backgroundImage}
         imageStyle={{ opacity: 0.1 }}
       >
-        {/* Envolvendo todo o conteúdo com TouchableWithoutFeedback para fechar o teclado */}
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          {/* Usando KeyboardAvoidingView para evitar sobreposição do teclado */}
           <KeyboardAvoidingView
             style={styles.inner}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             keyboardVerticalOffset={Platform.OS === "ios" ? 105 : 70} // Ajuste para iOS
           >
-            {/* Incluíndo o ScrollView para que o conteúdo role quando o teclado aparecer */}
             <ScrollView
               contentContainerStyle={styles.messagesContainer}
               keyboardShouldPersistTaps="handled"
