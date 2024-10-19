@@ -84,6 +84,36 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontWeight: "bold",
   },
+  audioButton: {
+    backgroundColor: Colors.default2, // Azul claro para o botão de áudio
+    borderRadius: 30,
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  recordButtonText: {
+    fontSize: 20,
+    color: '#FFF',
+  },
+  audioContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  playPauseButton: {
+    marginRight: 10,
+  },
+  playPauseText: {
+    fontSize: 24,
+  },
+  slider: {
+    width: 200,
+    height: 40,
+  },
+  timeText: {
+    fontSize: 12,
+    color: "#555",
+  },
 });
 
 export default styles;
