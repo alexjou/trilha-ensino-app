@@ -1,77 +1,90 @@
-import { Audio } from 'expo-av';
+import AudioRecorderPlayer, { AudioEncoderAndroidType, AudioSourceAndroidType, AVEncoderAudioQualityIOSType, AVEncodingOption } from 'react-native-audio-recorder-player';
+import { PermissionsAndroid, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
+import { Audio } from 'expo-av';
 import { CHATGPT_API_KEY, GOOGLE_API_KEY } from 'react-native-dotenv';
 
 let recording: Audio.Recording | null = null;
 
-export async function startRecording() {
+export async function startRecording(): Promise<void> {
   try {
-    const { status } = await Audio.requestPermissionsAsync();
-    if (status !== "granted") {
-      throw new Error("Permissão de gravação negada.");
-    }
-
-    recording = new Audio.Recording();
-    await recording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
-    await recording.startAsync();
-  } catch (error) {
-    console.error("Erro ao iniciar gravação:", error);
-  }
-}
-
-export async function stopRecording(): Promise<string | null> {
-  try {
-    if (recording) {
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      recording = null;
-      return uri;
-    }
-    return "";
-  } catch (error) {
-    console.error("Erro ao parar gravação:", error);
-    return "";
-  }
-}
-
-export async function transcribeAudio(audioUri: string): Promise<string> {
-  try {
-    // Lê o arquivo de áudio em Base64
-    const audioFile = await FileSystem.readAsStringAsync(audioUri, {
-      encoding: FileSystem.EncodingType.Base64,
+    console.log('Requesting permissions..');
+    await Audio.requestPermissionsAsync();
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: true,
+      playsInSilentModeIOS: true,
     });
 
-    // Faz a requisição para a API do Google Speech-to-Text
-    const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=${GOOGLE_API_KEY}`, {
+    console.log('Starting recording..');
+    const { recording: newRecording } = await Audio.Recording.createAsync(
+      Audio.RecordingOptionsPresets.HIGH_QUALITY
+    );
+    recording = newRecording;
+    console.log('Recording started');
+  } catch (err) {
+    console.error('Failed to start recording', err);
+    throw err;
+  }
+}
+
+export async function stopRecording(): Promise<string> {
+  if (!recording) {
+    throw new Error('No active recording');
+  }
+
+  console.log('Stopping recording..');
+  await recording.stopAndUnloadAsync();
+  const uri = recording.getURI();
+  console.log('Recording stopped and stored at', uri);
+
+  // Convertendo para MP3 (nota: esta é uma simulação, pois expo-av não suporta diretamente MP3)
+  const mp3Uri = `${FileSystem.documentDirectory}recording.mp3`;
+  await FileSystem.copyAsync({
+    from: uri,
+    to: mp3Uri
+  });
+
+  recording = null;
+  return mp3Uri;
+}
+
+export async function transcribeAudio(audioPath: string): Promise<string> {
+  try {
+    const fileInfo = await FileSystem.getInfoAsync(audioPath);
+    if (!fileInfo.exists) {
+      throw new Error('Arquivo de áudio não encontrado.');
+    }
+
+    const formData = new FormData();
+    formData.append('file', {
+      uri: audioPath,
+      type: 'audio/mp3',
+      name: 'audio.mp3',
+    } as any);
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'pt');
+
+    // Faz a requisição para a API da OpenAI Whisper
+    const response = await fetch(`https://api.openai.com/v1/audio/transcriptions`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Authorization": `Bearer ${CHATGPT_API_KEY}`,
       },
-      body: JSON.stringify({
-        config: {
-          encoding: "LINEAR16", // Certifique-se de que o áudio esteja nesse formato
-          sampleRateHertz: 16000, // Taxa de amostragem correta
-          languageCode: "pt-BR", // Define o idioma
-        },
-        audio: {
-          content: audioFile, // Envia o áudio em Base64
-        },
-      }),
+      body: formData,
     });
 
     const data = await response.json();
 
     // Verifica a resposta da API e retorna a transcrição
-    if (response.ok && data.results) {
-      const transcript = data.results.map((result: any) => result.alternatives[0].transcript).join('\n');
-      return transcript;
+    if (response.ok) {
+      return data.text;
     } else {
-      console.error("Erro na resposta da API do Google:", data);
+      console.error("Erro na resposta da API da OpenAI:", data);
       throw new Error(data.error?.message || "Erro ao transcrever áudio.");
     }
   } catch (error) {
-    // throw new Error("Erro ao transcrever áudio.");
-    return 'erro'
+    console.error("Erro ao transcrever áudio:", error);
+    return 'Erro ao transcrever áudio.';
   }
 }
 

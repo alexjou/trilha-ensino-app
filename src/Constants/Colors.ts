@@ -32,5 +32,9 @@ export default {
   buttonRed: '#B5151C',
   background_button: '#C7E7D9',
   background_types: '#F08474',
-  border_color: '#c2c2c2'
+  border_color: '#c2c2c2',
+  primary: '#4CAF50',
+  secondary: '#FF5722',
+  userMessage: '#E3F2FD',
+  botMessage: '#FFFFFF',
 };
