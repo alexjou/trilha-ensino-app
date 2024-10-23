@@ -7,6 +7,7 @@ import { StatusBar } from 'react-native';
 import Colors from './src/Constants/Colors';
 import Onboarding from './src/Pages/Onboarding';
 import Chat from './src/Pages/Chat';
+import VoiceAssistant from './src/Pages/VoiceAssistant';
 
 const Stack = createNativeStackNavigator();
 
@@ -14,11 +15,12 @@ export default function App() {
   return (
     <NavigationContainer>
       <StatusBar backgroundColor={Colors.default} />
-      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName="Onboarding" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Onboarding" component={Onboarding} />
         <Stack.Screen name="Chat" component={Chat} />
+        <Stack.Screen name="VoiceAssistant" component={VoiceAssistant} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -86,7 +86,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <AnimatedBubble messages={messages} />
+      {/* <AnimatedBubble messages={messages} /> */}
       <TouchableOpacity onPress={handleToggleListening} style={styles.microphoneButton}>
         <Text style={styles.microphoneButtonText}>
           {isListening ? 'Parar de ouvir' : 'Começar a ouvir'}

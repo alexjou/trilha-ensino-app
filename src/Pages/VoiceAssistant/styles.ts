@@ -1,0 +1,70 @@
+import { StyleSheet } from "react-native";
+import Colors from "../../Constants/Colors";
+
+export default StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  mainContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  animationContainer: {
+    width: 300,
+    height: 300,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  animation: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  recordButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.default2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    zIndex: 2,
+  },
+  transcriptionContainer: {
+    marginTop: 40,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    width: '90%',
+    height: 200,
+    maxHeight: 200,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  transcriptionText: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  backgroundAnimation: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+  },
+});

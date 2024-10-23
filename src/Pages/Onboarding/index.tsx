@@ -14,7 +14,7 @@ export default function Onboarding() {
   const data = [
     {
       title: 'Aqui o aluno é o protagonista',
-      description: 'Melhore o desempenho do seu filho através de aulas particulares personalizadas ao vivo e on-line.',
+      description: 'Conheça o #Trilha Ensino.',
       image: images.Onboarding1,
     },
     {

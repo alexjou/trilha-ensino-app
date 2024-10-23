@@ -5,16 +5,17 @@ import { MaterialIndicator } from "react-native-indicators";
 interface LoadingIndicatorProps {
   isLoading: boolean;
   color?: string;
+  size?: number;
 }
 
 export const LoadingIndicator = memo((props: LoadingIndicatorProps): ReactElement => {
-  const { isLoading, color = '#F5F5F5' } = props;
+  const { isLoading, color = '#F5F5F5', size = 30 } = props;
 
   return (
     <Fragment>
       {isLoading && (
-        <View style={{ height: 30 } as ViewStyle}>
-          <MaterialIndicator size={30} color={color} />
+        <View style={{ height: size } as ViewStyle}>
+          <MaterialIndicator size={size} color={color} />
         </View>
       )}
     </Fragment>

@@ -133,7 +133,7 @@ export default function Login() {
               <TouchableOpacity
                 style={styles.submitButton}
                 disabled={isSubmiting}
-                onPress={() => navigate.navigate("Chat")}
+                onPress={() => navigate.navigate("VoiceAssistant")}
               // onPress={onLoginPress}
 
               >

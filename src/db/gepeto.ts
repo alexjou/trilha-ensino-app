@@ -3,6 +3,7 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { Audio } from 'expo-av';
 import { CHATGPT_API_KEY, GOOGLE_API_KEY } from 'react-native-dotenv';
+import axios from 'axios';
 
 let recording: Audio.Recording | null = null;
 
@@ -22,7 +23,7 @@ export async function startRecording(): Promise<void> {
     recording = newRecording;
     console.log('Recording started');
   } catch (err) {
-    console.error('Failed to start recording', err);
+    console.log('Failed to start recording', err);
     throw err;
   }
 }
@@ -48,7 +49,7 @@ export async function stopRecording(): Promise<string> {
   return mp3Uri;
 }
 
-export async function transcribeAudio(audioPath: string): Promise<string> {
+export async function transcribeAudio(audioPath: string): Promise<string | undefined> {
   try {
     const fileInfo = await FileSystem.getInfoAsync(audioPath);
     if (!fileInfo.exists) {
@@ -64,26 +65,30 @@ export async function transcribeAudio(audioPath: string): Promise<string> {
     formData.append('model', 'whisper-1');
     formData.append('language', 'pt');
 
-    // Faz a requisição para a API da OpenAI Whisper
-    const response = await fetch(`https://api.openai.com/v1/audio/transcriptions`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${CHATGPT_API_KEY}`,
-      },
-      body: formData,
+    // Função que faz a requisição usando Axios
+    const fetchTranscription = async () => {
+      const response = await axios.post(`https://api.openai.com/v1/audio/transcriptions`, formData, {
+        headers: {
+          "Authorization": `Bearer ${CHATGPT_API_KEY}`,
+          "Content-Type": "multipart/form-data", // Axios ajusta automaticamente o Content-Type para multipart/form-data
+        },
+      });
+
+      return response.data.text;
+    };
+
+    // Promessa de timeout
+    const timeoutPromise = new Promise<string>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error("A requisição demorou mais de 30 segundos."));
+      }, 30000); // 30 segundos
     });
 
-    const data = await response.json();
-
-    // Verifica a resposta da API e retorna a transcrição
-    if (response.ok) {
-      return data.text;
-    } else {
-      console.error("Erro na resposta da API da OpenAI:", data);
-      throw new Error(data.error?.message || "Erro ao transcrever áudio.");
-    }
+    // Usa Promise.race para competir entre a requisição e o timeout
+    const result = await Promise.race([fetchTranscription(), timeoutPromise]);
+    return result;
   } catch (error) {
-    console.error("Erro ao transcrever áudio:", error);
+    console.log("Erro ao transcrever áudio:", error);
     return 'Erro ao transcrever áudio.';
   }
 }
@@ -97,7 +102,7 @@ export async function convertTextToSpeech(text: string): Promise<string> {
       },
       body: JSON.stringify({
         input: { text },
-        voice: { languageCode: "pt-BR", ssmlGender: "FEMALE" }, // Configure o idioma e a voz
+        voice: { name: "pt-BR-Wavenet-A", languageCode: "pt-BR", ssmlGender: "FEMALE" }, // Configure o idioma e a voz
         audioConfig: { audioEncoding: "MP3" },
       }),
     });
@@ -112,13 +117,12 @@ export async function convertTextToSpeech(text: string): Promise<string> {
       throw new Error("Erro ao converter texto em fala.");
     }
   } catch (error) {
-    console.error("Erro:", error);
+    console.log("Erro:", error);
     return "";
   }
 }
 
-export async function processAudioMessage(audioUri: string): Promise<string> {
-  console.log('entrou')
+export async function processAudioMessage(audioUri: string): Promise<{ audioGpt: string; textGpt: string } | undefined> {
   try {
     console.log('1', audioUri)
     const transcript = await transcribeAudio(audioUri);
@@ -127,10 +131,10 @@ export async function processAudioMessage(audioUri: string): Promise<string> {
     console.log('3', chatResponse)
     const mensageToAudio = await convertTextToSpeech(chatResponse)
     console.log('4', mensageToAudio)
-    return mensageToAudio;
+    return { audioGpt: mensageToAudio, textGpt: chatResponse };
   } catch (error) {
-    console.error("Erro ao processar mensagem de áudio:", error);
-    return "Erro ao processar a mensagem de áudio.";
+    console.log("Erro ao processar mensagem de áudio:", error);
+    return
   }
 }
 
@@ -140,12 +144,11 @@ export async function playAudio(audioUri: string) {
     await sound.loadAsync({ uri: audioUri });
     await sound.playAsync();
   } catch (error) {
-    console.error("Erro ao tocar áudio:", error);
+    console.log("Erro ao tocar áudio:", error);
   }
 }
 
 export async function sendChatMessage(message: string): Promise<string> {
-  console.log('teste: ', message)
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -155,20 +158,19 @@ export async function sendChatMessage(message: string): Promise<string> {
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: message }], // Estrutura correta para o gpt-3.5-turbo
+        messages: [{ role: "user", content: `Você vai ser uma assistente virtual, chamada tereza pronta para conversar com alunos de aproximadamente 10 anos para tirar suas dúvidas, responda como uma professora, ${message}` }], // Estrutura correta para o gpt-3.5-turbo
         max_tokens: 150, // Ajuste conforme necessário
       }),
     });
 
     const data = await response.json();
-    console.log(data)
     if (response.ok) {
       return data.choices[0].message.content; // Acessa o conteúdo da resposta do modelo
     } else {
       throw new Error(data.error.message || "Erro na API");
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.log("Error:", error);
     return "Desculpe, houve um erro ao processar sua solicitação.";
   }
 }
